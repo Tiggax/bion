@@ -2184,6 +2184,7 @@ dependencies = [
 [[package]]
 name = "ode_solvers"
 version = "0.4.0"
+source = "git+https://github.com/Tiggax/ode-solvers.git?branch=add-mut-system#daab93ded249baa811486964b31a2b16c2bc8178"
 dependencies = [
  "nalgebra",
  "num-traits",
