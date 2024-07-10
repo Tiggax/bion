@@ -1,8 +1,13 @@
 [package]
 name = "bion"
+build = "build.rs"
 version = "0.1.0"
 edition = "2018"
 authors = ["Tilen Gimpelj <tilen.gimpelj_ext@novartis.com>"]
+
+[package.metadata.winresource]
+OriginalFilename = "bion.exe"
+LegalCopyright = "MIT"
 
 [dependencies]
 egui = "0.27.0"
@@ -11,5 +16,12 @@ eframe = { version = "0.27.0", features = ["default"] }
 env_logger = { version = "0.11.3", default-features = false, features = [
         "auto-color",
         "humantime", ] }
-rusoda = "0.1.0"
-ode_solvers = "0.4.0"
+ode_solvers = {path = "../ode-solvers" }
+egui_dock = "0.12.0"
+argmin = "0.10.0"
+ndarray = "0.15.6"
+argmin-math = "0.4.0"
+egui_file = "0.17.0"
+
+[build-dependencies]
+winresource = "0.1"
