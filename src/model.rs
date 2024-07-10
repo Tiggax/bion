@@ -111,7 +111,9 @@ impl ode_solvers::System<Time, State> for Bioreactor {
         //dy[0] = 
 
         // VCD
-        let c_mu = mu * ( gluc / (ks_gluc + gluc)) * ( glut / ( ks_glut + glut ) ) * (c_O2 / (k_c_O2 + c_O2));
+        let mut c_mu = mu * ( gluc / (ks_gluc + gluc)) * ( glut / ( ks_glut + glut ) ) * (c_O2 / (k_c_O2 + c_O2));
+        c_mu = if gluc < 0. || glut < 0. || c_O2 < 0. {-1. * c_mu.abs()} else {c_mu};
+        
         dy[1] = c_mu * vcd.powf(n_vcd);
         // Gluc
         dy[2] = - k_gluc * vcd * ( gluc / ( ks_gluc + gluc) );
