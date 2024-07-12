@@ -1,4 +1,5 @@
 use core::fmt;
+use std::{fs, path::PathBuf};
 
 use crate::{base::{Graphs, Initial}, model::VOLUME};
 use ndarray::array;
@@ -29,6 +30,17 @@ pub struct RegressionApp {
     current_group: Group,
     initial: Initial,
     graphs: Graphs,
+    selected_file: Option<String>,
+}
+
+#[derive(Debug, serde::Deserialize)]
+struct Record {
+    days: Option<f64>,
+    vcd: Option<f64>,
+    gln: Option<f64>,
+    gluc: Option<f64>,
+    do_50: Option<f64>,
+    product: Option<f64>
 }
 
 impl RegressionApp {
@@ -44,6 +56,8 @@ impl RegressionApp {
             current_group: Group::VCD,
             initial: Initial::default(),
             graphs: Graphs::default(),
+            
+            selected_file: None,
         }
     }
 }
@@ -64,6 +78,51 @@ impl Front for RegressionApp {
                 let newapp = RegressionApp::default();
                 *self = newapp;
             }
+
+            ui.separator();
+            ui.label("input data");
+            if (ui.button("Load data")).clicked() {
+
+                if let Some(path) = rfd::FileDialog::new().pick_file() {
+                    self.selected_file = Some(path.display().to_string());
+                    let file = 
+                    if let Ok(content) = fs::read_to_string(path) {
+                        let mut rdr = csv::Reader::from_reader(content.as_bytes());
+                        for result in rdr.deserialize() {
+                            if let Ok(res) = result {
+                                let record: Record = res;
+                                if let Some(day) = record.days {
+                                    if let Some(vcd) = record.vcd {
+                                        self.nodes.add("VCD".to_string(), day, vcd/100.);
+                                    }
+                                    if let Some(gln) = record.gln {
+                                        self.nodes.add("Glutamin".to_string(), day, gln);
+                                    }
+                                    if let Some(gluc) = record.gluc {
+                                        self.nodes.add("Glucose".to_string(), day, gluc);
+                                    }
+                                }
+                            } else {
+                            }
+                        }
+                    };
+                };
+            }
+            
+            if let Some(path) = &self.selected_file {
+                ui.horizontal(|ui| {
+                    ui.label("Selected file:");
+                    ui.monospace(path.split("/").last().unwrap_or("None"));
+                });
+            }
+            
+            
+
+
+            ui.separator();
+            ui.label("Add constants");
+            ui.separator();
+
             if ui.button("Minimize").clicked() {
 
                 let cost = crate::regressor::Regressor {
