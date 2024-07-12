@@ -79,7 +79,7 @@ impl Default for MyApp {
         };
 
         let reg_tab = TabInstance {
-            name: "Regretion".to_owned(),
+            name: "Regression".to_owned(),
             tab: Panel::RegressionApp(RegressionApp::default()),
         };
 
