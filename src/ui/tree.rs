@@ -14,7 +14,7 @@ pub enum Action {
     Delete,
 }
 
-#[derive(Clone)]
+#[derive(Clone, Debug)]
 pub struct Tree {
     pub nodes: Vec<ParentNode>
 }
@@ -76,9 +76,9 @@ impl Tree {
     }
 }
 
-#[derive(Clone)]
+#[derive(Clone, Debug)]
 pub struct ParentNode {
-    name: String,
+    pub name: String,
     pub children: Vec<Node>
 }
 impl ParentNode {
@@ -144,9 +144,9 @@ impl ParentNode {
 }
 
 #[derive(PartialEq, Debug, Clone)]
-struct Node {
-    x: f64,
-    y: f64,
+pub struct Node {
+    pub x: f64,
+    pub y: f64,
 }
 
 impl Node {

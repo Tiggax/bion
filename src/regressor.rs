@@ -1,111 +1,200 @@
+use std::fmt::{self, Display, Formatter};
+
 use argmin::{core::{CostFunction, Error}, solver};
-use crate::model::{Bioreactor, VOLUME, State};
-use crate::base::{Initial, Graphs};
-use crate::ui::{tree::{Tree, ParentNode}, regression::Group};
+use egui_dock::node;
+use serde::de::value;
+use crate::{model::{Bioreactor, Initial, State, VOLUME}, ui::tree::{self, Par}};
+use crate::base::{Graphs};
+use crate::ui::{tree::{Tree, ParentNode}};
+
+#[derive(Debug, PartialEq, Eq, Clone)]
+pub enum Group {
+    VCD,
+    Glucose,
+    Glutamin,
+}
+
+impl Display for Group {
+    fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result {
+        write!(f, "{:?}", self)
+    }
+}
+
+#[derive(Clone, Debug)]
+pub struct Param {
+    pub target: Target,
+    pub mode: Mode
+}
+impl Param {
+    pub fn default() -> Self {
+        Self {
+            target: Target::MuMax,
+            mode: Mode::Mixed,
+        }
+    }
+}
+
+#[derive(Clone, Debug, PartialEq)]
+pub enum Mode {
+    Single(Group),
+    Mixed
+}
+
+#[derive(Clone, Debug, PartialEq)]
+pub enum Target {
+    MuMax,
+    NVcd,
+    FeedRate,
+    Glucose,
+    Glutamin
+}
+#[derive(Clone, Debug)]
+pub struct RegressorNode {
+    pub group: Group,
+    pub x: f64,
+    pub y: f64
+}
+
+impl RegressorNode {
+    fn new(group: Group, x: f64, y:f64) -> Self  {
+        Self { group, x, y }
+    }
+    pub fn translate(tree: Tree) -> Vec<RegressorNode> {
+        let mut out = Vec::new();
+        for ParentNode { name, children } in tree.nodes {
+
+            match name.as_ref() {
+                "VCD" => {
+                    for tree::Node { x, y } in children {
+                        out.push(RegressorNode::new(Group::VCD, x, y));
+                    }
+                },
+                "Glucose" => {
+                    for tree::Node { x, y } in children {
+                        out.push(RegressorNode::new(Group::Glucose, x, y));
+                    }
+                },
+                "Glutamin" => {
+                    for tree::Node { x, y } in children {
+                        out.push(RegressorNode::new(Group::Glutamin, x, y));
+                    }
+                },
+                _ => {}
+            }
+
+        }
+
+        out.sort_by(|a,b| {
+            a.x.partial_cmp(&b.x).unwrap()
+        });
+        let out = out.into_iter().rev().collect();
+        out
+    }
+}
 
 pub struct Regressor {
-    pub initial: Initial,
-    pub nodes: Tree,
+    pub nodes: Vec<RegressorNode>,
+    pub simulation: Bioreactor,
+    pub param: Param,
+    pub epsilon: f64,
+
 }
 
 impl Regressor {
     fn default() -> Self {
         Self {
-            initial: Initial::default(),
-            nodes: Tree {
-                nodes: vec![
-                    ParentNode::new(Group::VCD.to_string()),
-                    ParentNode::new(Group::Glucose.to_string()),
-                    ParentNode::new(Group::Glutamin.to_string()),
-                ],
-            },
+            nodes: Vec::new(),
+            simulation: Bioreactor::default(),
+            epsilon: 1e-3,
+            param: Param::default(),
         }
     }
 }
 
 impl CostFunction for Regressor {
-    type Param = Vec<f64>;
+    type Param = f64;
     type Output = f64;
-    
-    fn cost(&self, p: &Self::Param) -> Result<Self::Output, Error> {
-        for v in p {
-            if *v < 0. {
-                // return Err(Error::msg("value is negative"))
-                return Ok(100000.)
-            }
+
+    fn cost(&self, val: &Self::Param) -> Result<Self::Output, Error> {
+
+        if *val < 0. {
+            return Ok(100_000.)
         }
 
-        println!("cost ran");
-        let mut p = p.clone();
-        let k_glut = p.pop();
-        let ks_glut = p.pop();
-        let k_gluc = p.pop();
-        let ks_gluc = p.pop();
-        let mu = p.pop();
-
-        if let [None, None, None, None, None, ] = [mu, ks_gluc, k_gluc, ks_glut, k_glut] {
-            return Err(Error::msg("no point data"));
-        }
-
-
-        println!("values:\n{:?}\n{:?}\n{:?}\n{:?}\n{:?}", mu, ks_gluc, k_gluc, ks_glut, k_glut);
-
-        let k_glut = k_glut.expect("no k_glut");
-        let ks_glut = ks_glut.expect("no ks_glut");
-        let k_gluc = k_gluc.expect("no k_gluc");
-        let ks_gluc = ks_gluc.expect("no ks_gluc");
-        let mu = mu.expect("no mu");
-
-        let Initial {
-            vcd,
-            gluc,
-            glut,
-        } = self.initial;
-        
         const MINUTES: f64 = 14. * 24. * 60.;
 
-        let init_cond = State::from([VOLUME, vcd, gluc, glut, 80., 0., 0. ]);
-        let system = Bioreactor::fit(mu, ks_gluc, k_gluc, ks_glut, k_glut);
-        println!("{:?}", &system);
+        const STEP: f64 = 2.; // step increment lower is more precise but more computationaly intense
         
-        let mut stepper = ode_solvers::Rk4::new(system, 0., init_cond, MINUTES, 1.);
+        let initial_state = State::from([
+            self.simulation.initial.volume, 
+            self.simulation.initial.vcd, 
+            self.simulation.initial.glucose, 
+            self.simulation.initial.glutamin, 
+            (self.simulation.initial.oxigen_part * self.simulation.oxigen_saturation()) / 100., 
+            0., 
+            0. 
+        ]);
+
+        let mut simulation = self.simulation.clone();
+        simulation.update(&self.param, *val);
+
+        let mut stepper = ode_solvers::Rk4::new(simulation, 0., initial_state, MINUTES, STEP);
         let res = stepper.mut_integrate();
-        if let Ok(val) = res {
-            let mut g_vcd = Vec::new();
-            let mut g_gluc = Vec::new();
-            let mut g_glut = Vec::new();
 
-            let mut dist = 0.;
+        if let Ok(_val) = res {
 
-            for (t,y) in stepper.x_out().iter().zip(stepper.y_out()) {
-                g_vcd.push([*t, y[1] ]);
-                g_gluc.push([*t, y[2] ]);
-                g_glut.push([*t, y[3] ]);
-            }
-            println!("made vector points");
-            for (g_vec, name) in [(g_vcd, "VCD".to_string()), (g_gluc, "Glucose".to_string()), (g_glut, "Glutamin".to_string())] {
-                if let Some(vec) = self.nodes.clone().get(name.clone()) {
-                    println!("some: {}: {:?}\n....\n{:?}", name, vec, g_vec);
-                    for [nx, ny] in vec {
-                        println!("point: ({}, {})", nx, ny);
-                        if let Some(ps) = g_vec.iter().position(|[x,y]| { (*x - nx).powf(2.) < 1.}) {
-                            let point = g_vec[ps];
-                            println!("point: {:?}", point);
-                            dist += (nx - point[0]).powf(2.);
-                            dist += (ny - point[1]).powf(2.);
-                            println!("iter dist:{dist}");
-                        }
+            let mut nodes = match &self.param.mode {
+                Mode::Single(val) => {
+                    self.nodes.clone().into_iter()
+                    .filter(|node| {
+                        node.group == *val
+                    }).collect::<Vec<RegressorNode>>()
+                }
+                Mode::Mixed => self.nodes.clone(),
+            };
+
+            println!("nodes: {:?}", &nodes);
+
+            //let mut current_node = nodes.pop();
+            let mut result = 0.;
+            // for (t, y) in stepper.x_out().iter().zip(stepper.y_out()) {
+
+            //     match &current_node {
+            //         None => {println!("no more nodes"); break;},
+            //         Some(node) => {
+            //             println!("in some");
+            //             if (node.x - t).abs() > self.epsilon {
+            //                 continue;
+            //             }
+            //             let y = match node.group {
+            //                 Group::VCD => y[1],
+            //                 Group::Glucose => y[2],
+            //                 Group::Glutamin => y[3],
+            //             };
+
+            //             result += (y.powf(2.) - node.y.powf(2.)).abs();
+            //             current_node = nodes.pop();
+            //         }
+            //     }
+            // }
+
+            for node in nodes {
+                for (t, y) in stepper.x_out().iter().zip(stepper.y_out()) {
+                    if (node.x - t).abs() > self.epsilon {
+                        continue;
                     }
+                    let y = match node.group {
+                        Group::VCD => y[1],
+                        Group::Glucose => y[2],
+                        Group::Glutamin => y[3],
+                    };
+                    result += (y.powf(2.) - node.y.powf(2.)).abs();
                 }
             }
-            println!("result: {dist}");
-            if dist.is_nan() {
-                dist  = 10000.;
-            }
-            return Ok(dist)
+            Ok(result)
+
+        } else {
+            return Err(Error::msg("no result"))
         }
-        
-        
-        Err(Error::msg("no point"))
     }
 }

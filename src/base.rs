@@ -1,3 +1,8 @@
+use ode_solvers::Rk4;
+
+use crate::model::Bioreactor;
+
+#[derive(Debug)]
 pub struct Graphs {
     pub volume: Vec<[f64;2]>,
     pub vcd: Vec<[f64;2]>,
@@ -20,6 +25,7 @@ impl Graphs {
             product: Vec::new(),
         }
     }
+
 }
 
 #[derive(Clone)]
