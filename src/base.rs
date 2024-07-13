@@ -2,7 +2,7 @@ use ode_solvers::Rk4;
 
 use crate::model::Bioreactor;
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct Graphs {
     pub volume: Vec<[f64;2]>,
     pub vcd: Vec<[f64;2]>,

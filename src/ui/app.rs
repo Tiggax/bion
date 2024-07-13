@@ -3,18 +3,32 @@ use std::fs;
 use argmin::{core::Executor, solver::neldermead::NelderMead};
 use egui::Color32;
 use egui_plot::{HLine, Legend, Line, LineStyle, Plot, PlotPoints};
+use serde::{Deserialize, Serialize};
 
 use crate::{base::Graphs, model::{Bioreactor, State}, regressor::{Group, Mode, Param, Regressor, RegressorNode, Target}};
 
 use super::{tree::{ParentNode, Tree}, Front};
 
-#[derive(Debug, serde::Deserialize)]
+#[derive(Debug, Deserialize)]
 struct Record {
     minutes: Option<f64>,
     vcd: Option<f64>,
     gln: Option<f64>,
     gluc: Option<f64>,
     do_50: Option<f64>,
+    product: Option<f64>
+}
+
+#[derive(Serialize, Debug, Deserialize)]
+struct Output {
+    minutes: Option<f64>,
+    volume: Option<f64>,
+    vcd: Option<f64>,
+    glutamin: Option<f64>,
+    glucose: Option<f64>,
+    DO: Option<f64>,
+    c_O2: Option<f64>,
+    oxygen: Option<f64>,
     product: Option<f64>
 }
 
@@ -125,7 +139,7 @@ impl Front for BionApp {
                                 }
                             }
                         };
-                    };
+                    }
                 }
 
                 if ui.button("Clear Nodes").clicked() {
@@ -137,7 +151,42 @@ impl Front for BionApp {
                         ],
                     };
                 }
+                if ui.button("Export data").clicked() {
+                    if let Some(path) = rfd::FileDialog::new().save_file() {
+                        let selected_file_export = path.display().to_string();
+                        let Graphs { volume, vcd, glucose, glutamin, c_O2, O2, product } = self.sim_graphs.clone();
+                        
+                        
+                        if let Ok(mut wrt)  = csv::Writer::from_path(path) {
+                            for (i, [x,y]) in vcd.into_iter().enumerate() {
+                                println!("here");
+                                let row = Output {
+                                    minutes: Some(x),
+                                    volume: Some(volume[i][1]),
+                                    vcd: Some(y),
+                                    glutamin: Some(glutamin[i][1]),
+                                    glucose: Some(glucose[i][1]),
+                                    
+                                    DO: Some((c_O2[i][1] / self.sim.oxigen_saturation()) / 100.),
+                                    c_O2: Some(c_O2[i][1]),
+                                    oxygen: Some(O2[i][1]),
+                                    product: Some(product[i][1]),
+                                };
+                                println!("adding: {:?}", &row);
+                                if let Err(e) = wrt.serialize(row) {
+                                    println!("there was an error while writing: {:?}", e);
+                                }
+
+                            }
+                            if let Err(err) = wrt.flush() {
+                                println!("err: {:?}", err);
+                            }
+                        }
+                    }
+                }
             });
+
+            
             
             
             if let Some(path) = &self.selected_file {
@@ -201,8 +250,6 @@ impl Front for BionApp {
 
                         if let Some(p) = val.state.best_param {
                             self.sim.update( &self.minimization_param, p);
-
-                            println!("{:?}", self);
 
                         }
                         sim_changed = true;
