@@ -153,8 +153,6 @@ impl CostFunction for Regressor {
                 Mode::Mixed => self.nodes.clone(),
             };
 
-            println!("nodes: {:?}", &nodes);
-
             //let mut current_node = nodes.pop();
             let mut result = 0.;
             // for (t, y) in stepper.x_out().iter().zip(stepper.y_out()) {

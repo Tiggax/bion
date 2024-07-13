@@ -67,7 +67,6 @@ impl Tree {
             }
     }
     pub fn get(&mut self, name: String) -> Option<Vec<[f64; 2]>> {
-        println!("in get");
         if let Some(pos) = self.index_of(name.clone()) {
             return self.nodes[pos].get_vec();
         }
