@@ -5,7 +5,7 @@ use egui::Color32;
 use egui_plot::{HLine, Legend, Line, LineStyle, Plot, PlotPoints};
 use serde::{Deserialize, Serialize};
 
-use crate::{base::Graphs, model::{Bioreactor, State}, regressor::{Group, Mode, Param, Regressor, RegressorNode, Target}};
+use crate::{base::Graphs, model::{Bioreactor, State}, regressor::{Group, Mode, Param, RegressorNode, Target}};
 
 use super::{tree::{ParentNode, Tree}, Front};
 

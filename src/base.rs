@@ -1,6 +1,4 @@
-use ode_solvers::Rk4;
 
-use crate::model::Bioreactor;
 
 #[derive(Debug, Clone)]
 pub struct Graphs {

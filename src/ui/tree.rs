@@ -1,7 +1,6 @@
-use std::{collections::HashMap, hash::Hash};
 
-use egui::{accesskit::Point, CollapsingHeader, Rect, RichText, Ui};
-use egui_plot::{PlotPoint, PlotPoints, Points};
+use egui::{CollapsingHeader, RichText, Ui};
+use egui_plot::Points;
 
 pub enum Par {
     VCD,

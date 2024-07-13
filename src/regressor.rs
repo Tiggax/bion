@@ -1,11 +1,8 @@
 use std::fmt::{self, Display, Formatter};
 
-use argmin::{core::{CostFunction, Error}, solver};
-use egui_dock::node;
-use serde::de::value;
-use crate::{model::{Bioreactor, Initial, State, VOLUME}, ui::tree::{self, Par}};
-use crate::base::{Graphs};
-use crate::ui::{tree::{Tree, ParentNode}};
+use argmin::core::{CostFunction, Error};
+use crate::{model::{Bioreactor, State}, ui::tree::{self}};
+use crate::ui::tree::{Tree, ParentNode};
 
 #[derive(Debug, PartialEq, Eq, Clone)]
 pub enum Group {
@@ -143,7 +140,7 @@ impl CostFunction for Regressor {
 
         if let Ok(_val) = res {
 
-            let mut nodes = match &self.param.mode {
+            let nodes = match &self.param.mode {
                 Mode::Single(val) => {
                     self.nodes.clone().into_iter()
                     .filter(|node| {
