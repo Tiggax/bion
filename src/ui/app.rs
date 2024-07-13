@@ -1,4 +1,4 @@
-use std::fs;
+use std::{fs::{self, File}, io::Write};
 
 use argmin::{core::Executor, solver::neldermead::NelderMead};
 use egui::Color32;
@@ -157,9 +157,8 @@ impl Front for BionApp {
                         let Graphs { volume, vcd, glucose, glutamin, c_O2, O2, product } = self.sim_graphs.clone();
                         
                         
-                        if let Ok(mut wrt)  = csv::Writer::from_path(path) {
+                        if let Ok(mut wrt)  = csv::Writer::from_path(path.clone()) {
                             for (i, [x,y]) in vcd.into_iter().enumerate() {
-                                println!("here");
                                 let row = Output {
                                     minutes: Some(x),
                                     volume: Some(volume[i][1]),
@@ -172,7 +171,6 @@ impl Front for BionApp {
                                     oxygen: Some(O2[i][1]),
                                     product: Some(product[i][1]),
                                 };
-                                println!("adding: {:?}", &row);
                                 if let Err(e) = wrt.serialize(row) {
                                     println!("there was an error while writing: {:?}", e);
                                 }
@@ -180,6 +178,16 @@ impl Front for BionApp {
                             }
                             if let Err(err) = wrt.flush() {
                                 println!("err: {:?}", err);
+                            }
+                        }
+                        if let Ok(sim_json) = serde_json::to_string_pretty(&self.sim) {
+                            let mut sim_path = path;
+                            sim_path.set_extension("json");
+
+                            if let Ok(mut buffer) = File::create(sim_path) {
+                                if let Err(er) = buffer.write_all(sim_json.as_bytes()) {
+                                    println!("error in writing sim to file: {:?}", er);
+                                }
                             }
                         }
                     }
