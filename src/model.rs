@@ -1,5 +1,5 @@
 use egui::Slider;
-use serde::Serialize;
+use serde::{Deserialize, Serialize};
 
 use crate::regressor::Param;
 
@@ -10,7 +10,7 @@ pub type State = ode_solvers::SVector<f64,7>;
 pub type Time = f64;
 
 
-#[derive(Debug, Clone, Serialize)]
+#[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct TempShift {
     pub n_vcd: f64, // temp shift post
     pub day: f64, // day of shift
@@ -24,7 +24,7 @@ impl TempShift {
         }
     }
 }
-#[derive(Debug, Clone, Serialize)]
+#[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct Constants {
     pub product: f64,
     pub glucose: f64,
@@ -45,7 +45,7 @@ impl Constants {
     }
 }
 
-#[derive(Debug,Clone, Serialize)]
+#[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct Airation {
     pub cell_metabolism: f64,
     pub air_flow: f64, // [VVh]
@@ -63,7 +63,7 @@ impl Airation{
     }
 }
 
-#[derive(Debug,Clone, Serialize)]
+#[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct Pid {
     pub minimum: f64,
     pub fi_oxigen_max: f64,
@@ -79,7 +79,7 @@ impl Pid {
     }
 }
 
-#[derive(Debug,Clone, Serialize)]
+#[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct Initial {
     pub volume: f64,
     pub vcd: f64,
@@ -99,7 +99,7 @@ impl Initial {
     }
 }
 
-#[derive(Debug,Clone, Serialize)]
+#[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct Feeding {
     pub start : f64, // Day
     pub rate: f64, // feed_rate
@@ -117,7 +117,7 @@ impl Feeding {
     }
 }
 
-#[derive(Debug, Clone, Serialize)]
+#[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct Bioreactor {
     pub mu_max: f64,
     pub mix_rate: f64, // pzv

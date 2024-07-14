@@ -1,4 +1,4 @@
-use std::{fs::{self, File}, io::Write};
+use std::{convert::TryInto, fs::{self, File}, io::Write};
 
 use argmin::{core::Executor, solver::neldermead::NelderMead};
 use egui::Color32;
@@ -84,7 +84,27 @@ impl Front for BionApp {
             }
         
             ui.horizontal(|ui| {
+
                 let reset = ui.button("Reset").clicked();
+                if (ui.button("Load Simulation")).clicked() {
+
+                    if let Some(path) = rfd::FileDialog::new().pick_file() {
+                        if let Ok(content) = fs::read_to_string(path) {
+                            if let Ok(sim)  = serde_json::from_str::<Bioreactor>(&content) {
+                                self.old_sim = Some(self.sim.clone());
+                                self.sim = sim;
+                                sim_changed = true;
+                            }
+
+
+                        } else {
+                            println!("Error reading file");
+                        }
+
+                        
+                    }
+                }
+
                 if ui.button("previus simulation").clicked() {
                     if let Some(previus_sim) = self.old_sim.clone() {
                         self.sim = previus_sim;
@@ -141,6 +161,8 @@ impl Front for BionApp {
                         };
                     }
                 }
+
+                
 
                 if ui.button("Clear Nodes").clicked() {
                     self.point_nodes = Tree {
