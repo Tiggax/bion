@@ -232,9 +232,6 @@ impl Bioreactor {
     }
 }
 impl ode_solvers::System<Time, State> for Bioreactor {
-    fn system(&self, x: Time, y: &State, dy: &mut State) {
-        
-    }
 
     fn mut_system(&self, x: Time, y: &mut State, dy: &mut State) {
         let (v, vcd, gluc, glut, c_o2, mut o2_flow, product) = (y[0], y[1], y[2], y[3], y[4], y[5], y[6]);
@@ -319,4 +316,5 @@ impl ode_solvers::System<Time, State> for Bioreactor {
             dy[6] += product * (fi_v / v);
         }
     }
+    fn system(&self, x: Time, y: &State, dy: &mut State) {}
 }
