@@ -56,7 +56,7 @@ impl Airation{
     pub fn default() -> Self {
         Self {
             cell_metabolism: 1.9444,
-            air_flow: 0.5,//4.6e-2,
+            air_flow: 4.6e-2,
             henry: 1.6e-3,
             pid: Pid::default(),
         }
@@ -136,7 +136,7 @@ impl Bioreactor {
     pub fn default() -> Self {
         Self {
             mu_max: 0.002,
-            mix_rate: 13.,
+            mix_rate: 0.5,
             ks_glucose: 0.05,
             ks_glutamin: 0.05,
 
@@ -290,7 +290,7 @@ impl ode_solvers::System<Time, State> for Bioreactor {
 
         let c_o2_s = self.airation.henry * p_o2;
 
-        let out =  vcd * self.airation.cell_metabolism * 1e-10 * 60.; // mol / cel * sec
+        let out =  vcd * self.airation.cell_metabolism * 1e-8 * 60.; // mol / cel * sec
         let otr = k_la * (c_o2_s - c_o2);
 
 
