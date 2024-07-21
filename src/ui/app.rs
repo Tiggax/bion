@@ -188,7 +188,7 @@ impl Front for BionApp {
                                     glutamin: Some(glutamin[i][1]),
                                     glucose: Some(glucose[i][1]),
                                     
-                                    DO: Some((c_O2[i][1] / self.sim.oxigen_saturation()) / 100.),
+                                    DO: Some((c_O2[i][1] / self.sim.oxigen_saturation()) * 100.),
                                     c_O2: Some(c_O2[i][1]),
                                     oxygen: Some(O2[i][1]),
                                     product: Some(product[i][1]),
