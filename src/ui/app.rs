@@ -263,10 +263,15 @@ impl Front for BionApp {
                     epsilon: 1e-1,
                 };
 
-                let solver = NelderMead::new(vec![
-                    1e-5,
-                    0.99
-                    ])
+                let initial_points = match self.minimization_param.target {
+                    Target::MuMax => vec![1e-10, 0.9999999999],
+                    Target::NVcd => vec![1e-10, 0.9999999999],
+                    Target::FeedRate => vec![1e-10, 0.9999999999],
+                    Target::Glucose => vec![1e-10, 0.5],
+                    Target::Glutamin => vec![1e-10, 0.9999999999],
+                };
+
+                let solver = NelderMead::new(initial_points)
                 .with_sd_tolerance(1e-5).unwrap();
 
                 let res = Executor::new(cost, solver)
