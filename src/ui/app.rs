@@ -174,6 +174,8 @@ impl Front for BionApp {
                             ParentNode::new(Group::VCD.to_string()),
                             ParentNode::new(Group::Glucose.to_string()),
                             ParentNode::new(Group::Glutamin.to_string()),
+                            ParentNode::new(Group::Product.to_string()),
+                            ParentNode::new(Group::DO.to_string()),
                         ],
                     };
                 }
