@@ -228,6 +228,7 @@ impl Bioreactor {
             crate::regressor::Target::FeedRate => self.feeding.rate = val,
             crate::regressor::Target::Glucose => self.constants.glucose = val,
             crate::regressor::Target::Glutamin => self.constants.glutamin = val,
+            crate::regressor::Target::Product => self.constants.product = val,
         }
     }
 }

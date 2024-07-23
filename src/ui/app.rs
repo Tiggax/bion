@@ -53,6 +53,8 @@ impl Default for BionApp {
                     ParentNode::new(Group::VCD.to_string()),
                     ParentNode::new(Group::Glucose.to_string()),
                     ParentNode::new(Group::Glutamin.to_string()),
+                    ParentNode::new(Group::Product.to_string()),
+                    ParentNode::new(Group::DO.to_string()),
                 ],
             },
             sim_graphs: Graphs::default(),
@@ -151,6 +153,12 @@ impl Front for BionApp {
                                         if let Some(gluc) = record.gluc {
                                             self.point_nodes.add("Glucose".to_string(), minute, gluc);
                                         }
+                                        if let Some(oxygen) = record.do_50 {
+                                            self.point_nodes.add("DO".to_string(), minute, oxygen);
+                                        }
+                                        if let Some(product) = record.product {
+                                            self.point_nodes.add("Product".to_string(), minute, product);
+                                        }
                                     }
                                 }
                             }
@@ -230,6 +238,7 @@ impl Front for BionApp {
                 ui.selectable_value(&mut self.minimization_param.target, Target::FeedRate, "Feed rate");
                 ui.selectable_value(&mut self.minimization_param.target, Target::Glucose, "Glucose");
                 ui.selectable_value(&mut self.minimization_param.target, Target::Glutamin, "Glutamin");
+                ui.selectable_value(&mut self.minimization_param.target, Target::Product, "Product");
             });
             ui.separator();
 
@@ -241,6 +250,8 @@ impl Front for BionApp {
                 ui.selectable_value(&mut self.minimization_param.mode, Mode::Single(Group::VCD), "VCD");
                 ui.selectable_value(&mut self.minimization_param.mode, Mode::Single(Group::Glucose), "Glucose");
                 ui.selectable_value(&mut self.minimization_param.mode, Mode::Single(Group::Glutamin), "Glutamin");
+                ui.selectable_value(&mut self.minimization_param.mode, Mode::Single(Group::DO), "DO");
+                ui.selectable_value(&mut self.minimization_param.mode, Mode::Single(Group::Product), "Product");
                     //}
             });
             ui.separator();
@@ -265,6 +276,7 @@ impl Front for BionApp {
                     Target::FeedRate => vec![1e-10, 0.9999999999],
                     Target::Glucose => vec![1e-10, 0.5],
                     Target::Glutamin => vec![1e-10, 0.9999999999],
+                    Target::Product => vec![1e-10, 0.9999999999],
                 };
 
                 let solver = NelderMead::new(initial_points)
@@ -371,6 +383,25 @@ impl Front for BionApp {
         let plot_resp = my_plot.show(ui, |plot_ui| {
             
             let mut plot_points = self.point_nodes.plot_points();
+
+            // DO
+            let do_points = plot_points.pop();
+            if let Some(points) = do_points {
+                plot_ui.points(points
+                    .radius(4.)
+                    .color(Color32::LIGHT_BLUE)
+                );
+            }
+
+            // product
+            let product_points = plot_points.pop();
+            if let Some(points) = product_points {
+                plot_ui.points(points
+                    .radius(4.)
+                    .color(Color32::GOLD)
+                );
+            }
+
             // Glutamin
             let glut_points = plot_points.pop();
             if let Some(points) = glut_points {

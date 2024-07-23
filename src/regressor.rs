@@ -9,6 +9,8 @@ pub enum Group {
     VCD,
     Glucose,
     Glutamin,
+    DO,
+    Product,
 }
 
 impl Display for Group {
@@ -43,7 +45,8 @@ pub enum Target {
     NVcd,
     FeedRate,
     Glucose,
-    Glutamin
+    Glutamin,
+    Product,
 }
 #[derive(Clone, Debug)]
 pub struct RegressorNode {
@@ -182,6 +185,8 @@ impl CostFunction for Regressor {
                         Group::VCD => y[1],
                         Group::Glucose => y[2],
                         Group::Glutamin => y[3],
+                        Group::DO => y[4],
+                        Group::Product => y[6],
                     };
                     result += (y.powf(2.) - node.y.powf(2.)).abs();
                 }
