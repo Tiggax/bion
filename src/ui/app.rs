@@ -1,4 +1,4 @@
-use std::{convert::TryInto, fs::{self, File}, io::Write};
+use std::{fs::{self, File}, io::Write};
 
 use argmin::{core::Executor, solver::neldermead::NelderMead};
 use egui::Color32;
@@ -37,9 +37,7 @@ pub struct BionApp {
     sim: Bioreactor,
     old_sim: Option<Bioreactor>,
     sim_graphs: Graphs,
-    graphs: Graphs,
     point_nodes: Tree,
-    current_group: Group,
     selected_file: Option<String>,
     results: Option<String>,
     minimization_param: Param,
@@ -57,9 +55,7 @@ impl Default for BionApp {
                     ParentNode::new(Group::Glutamin.to_string()),
                 ],
             },
-            current_group: Group::VCD,
             sim_graphs: Graphs::default(),
-            graphs: Graphs::default(),
             selected_file: None,
             results: None,
             minimization_param: Param::default(),
@@ -383,7 +379,6 @@ impl Front for BionApp {
                     .color(Color32::YELLOW)
                 );
             }
-            plot_ui.line(Line::new(PlotPoints::from(self.graphs.glutamin.clone())).color(Color32::YELLOW).name("Glutamin Node"));
 
             // glucose
             let gluc_points = plot_points.pop();
@@ -394,8 +389,6 @@ impl Front for BionApp {
                 );
             }
 
-            plot_ui.line(Line::new(PlotPoints::from(self.graphs.glucose.clone())).color(Color32::GREEN).name("Glucose Node"));
-
             // vcd
             let vcd_points = plot_points.pop();
             if let Some(points) = vcd_points {
@@ -404,10 +397,6 @@ impl Front for BionApp {
                     .color(Color32::RED)
                 );
             }
-
-            plot_ui.line(Line::new(PlotPoints::from(self.graphs.vcd.clone())).color(Color32::RED).name("VCD Node"));
-
-
 
             // ------------------- show sim -------------------
         
