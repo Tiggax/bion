@@ -128,9 +128,6 @@ impl Front for BionApp {
             }).body_returned.unwrap_or(false);
 
             ui.separator();
-            ui.collapsing("Regression", |ui| {
-
-            });
             ui.label("input data");
             ui.horizontal(|ui|{
                 if (ui.button("Load data")).clicked() {
