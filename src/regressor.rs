@@ -47,6 +47,7 @@ pub enum Target {
     Glucose,
     Glutamin,
     Product,
+    DO,
 }
 #[derive(Clone, Debug)]
 pub struct RegressorNode {

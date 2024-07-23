@@ -240,6 +240,7 @@ impl Front for BionApp {
                 ui.selectable_value(&mut self.minimization_param.target, Target::FeedRate, "Feed rate");
                 ui.selectable_value(&mut self.minimization_param.target, Target::Glucose, "Glucose");
                 ui.selectable_value(&mut self.minimization_param.target, Target::Glutamin, "Glutamin");
+                ui.selectable_value(&mut self.minimization_param.target, Target::DO, "DO");
                 ui.selectable_value(&mut self.minimization_param.target, Target::Product, "Product");
             });
             ui.separator();
@@ -279,6 +280,7 @@ impl Front for BionApp {
                     Target::Glucose => vec![1e-10, 0.5],
                     Target::Glutamin => vec![1e-10, 0.9999999999],
                     Target::Product => vec![1e-10, 0.9999999999],
+                    Target::DO => vec![1e-10, 0.9999999999],
                 };
 
                 let solver = NelderMead::new(initial_points)
