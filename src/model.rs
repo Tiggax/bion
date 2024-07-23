@@ -314,7 +314,7 @@ impl ode_solvers::System<Time, State> for Bioreactor {
             dy[2] += ( self.feeding.glucose - gluc ) * ( fi_v / v );
             dy[3] += ( self.feeding.glutamin - glut ) * ( fi_v / v );
 
-            dy[6] += product * (fi_v / v);
+            dy[6] -= product * (fi_v / v);
         }
     }
     fn system(&self, x: Time, y: &State, dy: &mut State) {}
