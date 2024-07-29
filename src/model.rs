@@ -39,7 +39,7 @@ impl Constants {
             product:    1e-4,
             k_glucose:    1e-4,
             k_glutamine:  1e-4,
-            kP:         1e-4,
+            kP:         1e-2,
             kDO:        1e-4,
         }
     }
@@ -273,9 +273,9 @@ impl ode_solvers::System<Time, State> for Bioreactor {
         let mv = self.constants.kP * DO_error;
         if DO_error > 0. {
             o2_flow = (mv * self.airation.pid.fi_oxygen_max) * 1000.;
-            if o2_flow > self.airation.pid.max_flow {
-                o2_flow = self.airation.pid.max_flow;
-            }
+        if o2_flow > self.airation.pid.max_flow {
+            o2_flow = self.airation.pid.max_flow;
+        }
         } else {
             o2_flow = 0.;
         }
