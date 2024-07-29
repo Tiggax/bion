@@ -130,8 +130,8 @@ impl CostFunction for Regressor {
             self.simulation.initial.volume, 
             self.simulation.initial.vcd, 
             self.simulation.initial.glucose, 
-            self.simulation.initial.glutamin, 
-            (self.simulation.initial.oxigen_part * self.simulation.oxigen_saturation()) / 100., 
+            self.simulation.initial.glutamine, 
+            (self.simulation.initial.oxygen_part * self.simulation.oxigen_saturation()) / 100., 
             0., 
             0. 
         ]);

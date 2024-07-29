@@ -322,8 +322,8 @@ impl Front for BionApp {
                     self.sim.initial.volume, 
                     self.sim.initial.vcd, 
                     self.sim.initial.glucose, 
-                    self.sim.initial.glutamin, 
-                    (self.sim.initial.oxigen_part * self.sim.oxigen_saturation()) / 100., 
+                    self.sim.initial.glutamine, 
+                    (self.sim.initial.oxygen_part * self.sim.oxigen_saturation()) / 100., 
                     0., 
                     0. 
                 ]);
