@@ -285,7 +285,7 @@ impl ode_solvers::System<Time, State> for Bioreactor {
 
         let flow_total = air_flow + o2_flow; // 
         let mut k_la = 2.17e-5 * power_input.powf(1.1) * flow_total.powf(0.9); // 1/min
-        //k_la *= (self.initial.volume/v); // dilution volume correction 
+        k_la *= (self.initial.volume/v); // dilution volume correction 
 
         let fiv_o2_c = air_flow * 0.21 + o2_flow; // flow je stalen , kisik je odvisen
         
