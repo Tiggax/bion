@@ -1,6 +1,6 @@
 # Usage
 
-[App]](_static/app.png)
+![App]](_static/app.png)
 
 The app is devided into two sections.
 
