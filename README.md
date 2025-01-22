@@ -23,7 +23,7 @@ There is also a Nix flake present for better dependency managment.
 
 ## Usage
 
-See [Usage](docs/Usage.md)
+See [Usage](https://tiggax.github.io/bion/)
 
 ## License
 
