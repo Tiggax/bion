@@ -1,6 +1,6 @@
 # Usage
 
-![App]](/bion/assets/app.png)
+![App](/bion/assets/app.png)
 
 The app is devided into two sections.
 
