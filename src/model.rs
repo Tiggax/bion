@@ -63,8 +63,11 @@ pub struct Airation {
     /// Cell metabolism [mol / cel * min]
     /// Consumption rate constant
     pub cell_metabolism: f64,
+    /// Air flow [VVh]
     pub air_flow: f64, // [VVh]
+    /// Henry's constant [mol/(bar L)]
     pub henry: f64,
+    /// PID controller struct
     pub pid: Pid,
 }
 impl Airation {
@@ -78,10 +81,14 @@ impl Airation {
     }
 }
 
+/// PID controller struct, containing all required parameters of PID controller
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct Pid {
+    /// Minimum level of DO oxygen, or set point of the PID controler [%]
     pub minimum: f64,
+    /// FI value for maximum oxygen [L / min]
     pub fi_oxygen_max: f64,
+    /// Value of max flow avaliable to the PID controller. [L / min]
     pub max_flow: f64,
 }
 impl Pid {
@@ -94,11 +101,18 @@ impl Pid {
     }
 }
 
+/// Initial state values struct.
+/// These values are the values of each of the parameters at the start of the system.
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct Initial {
+    /// Volume of the Bioractor [L]
     pub volume: f64,
+    /// # Viable Cell Density
+    /// The ammount of cell,that are viable ( alive and able to multiply ) in a volume ammount [MVC / (mL^2)]
     pub vcd: f64,
+    /// Initial Glucose level in the bioreactor [g / L]
     pub glucose: f64,
+    /// Initial Glutamine level in the bioreactor [g / L]
     pub glutamine: f64,
     pub oxygen_part: f64,
 }
