@@ -114,6 +114,7 @@ pub struct Initial {
     pub glucose: f64,
     /// Initial Glutamine level in the bioreactor [g / L]
     pub glutamine: f64,
+    /// diluted Oxigen concentration [%]
     pub oxygen_part: f64,
 }
 impl Initial {
@@ -128,11 +129,18 @@ impl Initial {
     }
 }
 
+/// Bioreactor feeding struct
+/// this contains all of the feeding variables.
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct Feeding {
-    pub start: f64,   // [day]
-    pub rate: f64,    // [(%"IWV")/"day]
+    /// Start time of the feeding [day]
+    pub start: f64, // [day]
+    /// Feeding rate, at which the feed is added to the reactor in reference to its volume.
+    /// [(% "IWV")/ day]
+    pub rate: f64, // [(%"IWV")/"day]
+    /// Glucose ammount in the feed per litre [g/L]
     pub glucose: f64, // [g/L]
+    /// Glutamine ammount in the feed per litre [g/L]
     pub glutamine: f64,
 }
 impl Feeding {
@@ -145,7 +153,7 @@ impl Feeding {
         }
     }
 }
-
+/// Struct reprisenting the bioreactor
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct Bioreactor {
     pub mu_max: f64,
