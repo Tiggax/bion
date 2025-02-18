@@ -43,15 +43,17 @@ jobs:
       - name: Build with Jekyll
         uses: actions/jekyll-build-pages@v1
         with:
-          destination: docs
+          source: ./docs
+          destination: ./docs
 
       - name: list
+        run: ls
         run: ls docs
  
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
         with:
-          path: docs
+          path: ./docs
 
   deploy:
     environment:
