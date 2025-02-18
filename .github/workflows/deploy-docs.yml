@@ -22,8 +22,7 @@ concurrency:
   cancel-in-progress: false
 
 jobs:
-  # Single deploy job since we're just deploying
-  deploy:
+  build:
     environment:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
@@ -33,18 +32,29 @@ jobs:
         uses: hecrj/setup-rust-action@v2
       - name: Checkout
         uses: actions/checkout@v4
-      - name: Setup Pages
-        uses: actions/configure-pages@v5
-
       - name: Build docs
         run: cargo doc --no-deps
       - name: Move to docs folder
-        run: mv target/doc docs/doc
+        run: mv target/doc docs
+        
+      - name: Setup Pages
+        uses: actions/configure-pages@v5
+      - name: Build with Jekyll
+        uses: actions/jekyll-build-pages@v1
+        with:
+          source: /docs
+          destination: ./_site
+ 
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
-        with:
-          # Upload entire repository
-          path: 'docs'
-      - name: Deploy to GitHub Pages
+
+
+  deploy:
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Deploy on Github Pages
         id: deployment
         uses: actions/deploy-pages@v4
