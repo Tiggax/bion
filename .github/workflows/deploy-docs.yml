@@ -32,6 +32,9 @@ jobs:
         uses: hecrj/setup-rust-action@v2
       - name: Checkout
         uses: actions/checkout@v4
+
+      - name: Create Output
+        run: mkdir ./_site
         
       - name: Build docs
         run: cargo doc --no-deps
