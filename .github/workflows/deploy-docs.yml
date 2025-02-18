@@ -47,8 +47,10 @@ jobs:
           destination: ./docs
 
       - name: list
-        run: ls
-        run: ls docs
+        run: |
+          ls
+          echo ---
+          ls docs
  
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
