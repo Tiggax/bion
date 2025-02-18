@@ -32,16 +32,6 @@ jobs:
         uses: hecrj/setup-rust-action@v2
       - name: Checkout
         uses: actions/checkout@v4
-
-      - name: Create Output
-        run: mkdir ./_site
-        
-      - name: Build docs
-        run: cargo doc --no-deps
-      - name: Move to docs folder
-        run: mv target/doc/* ./_site
-      - name: list pre
-        run: ls ./_site
         
       - name: Setup Pages
         uses: actions/configure-pages@v5
@@ -51,12 +41,11 @@ jobs:
           source: ./docs
           destination: ./_site
 
-      - name: list
-        run: |
-          ls
-          echo ---
-          ls ./_site
- 
+      - name: Build docs
+        run: cargo doc --no-deps
+      - name: Move to docs folder
+        run: mv target/doc/* ./_site
+        
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
         with:
