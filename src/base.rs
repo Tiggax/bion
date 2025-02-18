@@ -1,17 +1,17 @@
-
-
+/// Graphs struct that contains the vectors of data points for the graphs to render plots to.
 #[derive(Debug, Clone)]
 pub struct Graphs {
-    pub volume: Vec<[f64;2]>,
-    pub vcd: Vec<[f64;2]>,
-    pub glucose: Vec<[f64;2]>,
-    pub glutamin: Vec<[f64;2]>,
-    pub c_O2: Vec<[f64;2]>,
-    pub O2: Vec<[f64;2]>,
-    pub product: Vec<[f64;2]>,
+    pub volume: Vec<[f64; 2]>,
+    pub vcd: Vec<[f64; 2]>,
+    pub glucose: Vec<[f64; 2]>,
+    pub glutamin: Vec<[f64; 2]>,
+    pub c_O2: Vec<[f64; 2]>,
+    pub O2: Vec<[f64; 2]>,
+    pub product: Vec<[f64; 2]>,
 }
 
 impl Graphs {
+    /// Default implementation that returns empty points vectors.
     pub fn default() -> Self {
         Self {
             volume: Vec::new(),
@@ -23,9 +23,9 @@ impl Graphs {
             product: Vec::new(),
         }
     }
-
 }
 
+/// Struct that contains the initial values of Viable cell density, glucose and glutamine
 #[derive(Clone)]
 pub struct Initial {
     pub vcd: f64,
