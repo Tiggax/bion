@@ -25,7 +25,10 @@ fn main() -> Result<(), eframe::Error> {
     )
 }
 
+/// # App eframe for Bion app
+/// this implements the functions for viewing the app
 impl eframe::App for BionApp {
+    /// Update function that takes the frame, context and the BionApp ui and renders left panel and a central panel
     fn update(&mut self, ctx: &egui::Context, _frame: &mut eframe::Frame) {
         egui::SidePanel::left("options").show(ctx, |ui| self.left_panel(ui, ctx));
         egui::CentralPanel::default().show(ctx, |ui| self.center_panel(ui, ctx));
