@@ -40,6 +40,8 @@ jobs:
         run: cargo doc --no-deps
       - name: Move to docs folder
         run: mv target/doc/* ./_site
+      - name: list pre
+        run: ls ./_site
         
       - name: Setup Pages
         uses: actions/configure-pages@v5
