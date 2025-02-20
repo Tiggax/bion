@@ -4,3 +4,7 @@ plugins:
 
 title: Bion App
 description: Mathematical modeling app for fed-batch bioractors
+
+permalinks:
+  Usage: /usage
+  Rust Doc: /bion
