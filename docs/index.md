@@ -1,4 +1,7 @@
-
+---
+title: Bion App
+permalink: /bion
+---
 
 Click here to see the the [Usage](/bion/usage)
 
