@@ -1,6 +1,6 @@
 remote_theme: kitian616/jekyll-TeXt-theme
 text_skin: dark
-highlight_theme: tommorow-night
+highlight_theme: tomorrow-night
 
 plugins:
 - jekyll-remote-theme # add this line to the plugins list if you already have one
