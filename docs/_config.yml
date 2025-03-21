@@ -1,4 +1,7 @@
-remote_theme: pages-themes/hacker@v0.2.0
+remote_theme: kitian616/jekyll-text-theme@v2.2.6
+text_skin: dark
+highlight_theme: tommorow-night
+
 plugins:
 - jekyll-remote-theme # add this line to the plugins list if you already have one
 - jekyll-octicons
@@ -6,8 +9,3 @@ plugins:
 title: Bion App
 description: Mathematical modeling app for fed-batch bioractors
 
-toc:
-  - page: Usge
-    url: /bion/usage
-  - page: Rust Doc
-    url: /bion/bion

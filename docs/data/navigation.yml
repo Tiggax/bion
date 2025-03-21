@@ -1,0 +1,13 @@
+header:
+  - text: Documentation
+    internal: true
+    url: ./bion
+
+  - title: Download
+  - children:
+    - text: Linux
+      url: /releases/latest/download/bion-x86_64-unknown-linux-gnu.tar.gz
+    - text: Windows
+      url: /releases/latest/download/bion-x86_64-pc-windows-msvc.zip
+    - text: Mac
+      url: /releases/latest/download/bion-x86_64-apple-darwin.tar.gz

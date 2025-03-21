@@ -1,4 +1,0 @@
-- Download
-  - [Linux](/releases/latest/download/bion-x86_64-unknown-linux-gnu.tar.gz)
-  - [Windows](/releases/latest/download/bion-x86_64-pc-windows-msvc.zip)
-  - [Mac](/releases/latest/download/bion-x86_64-apple-darwin.tar.gz)
