@@ -3,9 +3,9 @@ header:
     url: ./bion
   - title: Download
     children:
-    - text: Linux
+    - title: Linux
       url: /releases/latest/download/bion-x86_64-unknown-linux-gnu.tar.gz
-    - text: Windows
+    - title: Windows
       url: /releases/latest/download/bion-x86_64-pc-windows-msvc.zip
-    - text: Mac
+    - title: Mac
       url: /releases/latest/download/bion-x86_64-apple-darwin.tar.gz
