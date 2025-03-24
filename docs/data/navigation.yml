@@ -1,10 +1,8 @@
 header:
-  - text: Documentation
-    internal: true
+  - title: Documentation
     url: ./bion
-
   - title: Download
-  - children:
+    children:
     - text: Linux
       url: /releases/latest/download/bion-x86_64-unknown-linux-gnu.tar.gz
     - text: Windows
