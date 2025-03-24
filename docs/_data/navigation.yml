@@ -1,4 +1,4 @@
-sb:
+docs-en:
   - title: Documentation
     url: ./bion
   - title: Download
@@ -13,4 +13,4 @@ sb:
 
 
 sidebar:
-  nav: sb
+  nav: docs-en
