@@ -1,8 +1,8 @@
 # Usage
 
-![App](/bion/assets/app.png)
+![App](./assets/app.png)
 
-The app is devided into two sections.
+The app is divided into two sections.
 
 - the control panel on the left with:
 
