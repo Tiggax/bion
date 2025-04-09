@@ -14,7 +14,9 @@
       {
         defaultPackage = naersk-lib.buildPackage ./.;
         devShell = with pkgs; mkShell {
-          buildInputs = [ 
+          buildInputs = [
+            mdbook
+             
             cargo rustc rustfmt pre-commit rustPackages.clippy 
             xorg.libX11 
             xorg.libXcursor 

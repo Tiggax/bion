@@ -35,21 +35,22 @@ jobs:
         
       - name: Build docs
         run: cargo doc --no-deps
+
       - name: Move to docs folder
-        run: mv target/doc/* ./docs
-        
-      - name: Setup Pages
-        uses: actions/configure-pages@v5
-      - name: Build with Jekyll
-        uses: actions/jekyll-build-pages@v1
+        run: mv target/doc/* ./book
+
+      - name: Setup mdBook
+        uses: peaceiris/actions-mdbook@v2
         with:
-          source: ./docs
-          destination: ./_site
+          mdbook-version: 'latest'
+
+      - name: Build mdBook
+        run: mdbook build
 
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
         with:
-          path: ./_site
+          path: ./book
 
   deploy:
     environment:
