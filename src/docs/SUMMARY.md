@@ -1,7 +1,11 @@
 # Summary
 
-- [Bion App](./homepage.md)
-  - [Getting the App](./downloads.md)
+[Bion App](./homepage.md)
+
+# User Guide
+
+- [Installation](./downloads.md)
+
 - [Usage](./usage.md)
   
   
