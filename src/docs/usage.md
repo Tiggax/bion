@@ -1,5 +1,7 @@
 # Usage
 
+> To see the code documentation see [the Docs](/bion/bion/index.html)
+
 ![App](./assets/app.png)
 
 The app is divided into two sections.
