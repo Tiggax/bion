@@ -34,7 +34,7 @@ jobs:
         uses: actions/checkout@v4
         
       - name: Build docs
-        run: cargo doc --no-deps
+        run: cargo doc --no-deps --target-dir book
 
       - name: Setup mdBook
         uses: peaceiris/actions-mdbook@v2
@@ -43,9 +43,6 @@ jobs:
 
       - name: Build mdBook
         run: mdbook build
-
-      - name: Move to docs folder
-        run: mv target/doc/* ./book
 
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
