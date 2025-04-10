@@ -1,56 +1,66 @@
 {
   inputs = {
-    naersk.url = "github:nix-community/naersk/master";
+    flake-utils.url = "github:numtide/flake-utils";
+    naersk.url = "github:nix-community/naersk";
     nixpkgs.url = "github:NixOS/nixpkgs/nixpkgs-unstable";
-    utils.url = "github:numtide/flake-utils";
+
+    nixpkgs-mozilla = {
+      url = "github:mozilla/nixpkgs-mozilla";
+      flake = false;
+    };
   };
 
-  outputs = { self, nixpkgs, utils, naersk }:
-    utils.lib.eachDefaultSystem (system:
+  outputs = { self, flake-utils, naersk, nixpkgs, nixpkgs-mozilla }:
+    flake-utils.lib.eachDefaultSystem (system:
       let
-        pkgs = import nixpkgs { inherit system; };
-        naersk-lib = pkgs.callPackage naersk { };
-      in
-      {
-        defaultPackage = naersk-lib.buildPackage ./.;
-        devShell = with pkgs; mkShell {
-          buildInputs = [
+        pkgs = (import nixpkgs) {
+          inherit system;
+
+          overlays = [
+            (import nixpkgs-mozilla)
+          ];
+        };
+
+        toolchain = (pkgs.rustChannelOf {
+          rustToolchain = ./rust-toolchain.toml;
+          sha256 = "sha256-X/4ZBHO3iW0fOenQ3foEvscgAPJYl2abspaBThDOukI=";
+        }).rust;
+
+        naersk' = pkgs.callPackage naersk {
+          cargo = toolchain;
+          rustc = toolchain;
+        };
+
+      in rec {
+        # For `nix build` & `nix run`:
+        defaultPackage = naersk'.buildPackage {
+          src = ./.;
+        };
+
+        # For `nix develop`:
+        devShell = pkgs.mkShell rec {
+          nativeBuildInputs = with pkgs; [
+            toolchain
             mdbook
-             
-            cargo rustc rustfmt pre-commit rustPackages.clippy 
+            rustPackages.clippy
+
             xorg.libX11 
             xorg.libXcursor 
             xorg.libXi 
             xorg.libXrandr
-            libxkbcommon
-            pipewire
-            libGL
-            wayland 
             xorg.libxcb  
-            alsa-lib 
-            libudev-zero 
-            openssl 
-            llvm 
+            libxkbcommon
+            libGL
+            
+            wayland
+
             pkg-config 
-            gcc 
-            sqlite
+
           ];
-          RUST_SRC_PATH = rustPlatform.rustLibSrc;
-          LD_LIBRARY_PATH = "$LD_LIBRARY_PATH:${
-              with pkgs;
-              pkgs.lib.makeLibraryPath [
-                xorg.libX11 
-                xorg.libXcursor 
-                xorg.libXi
-                xorg.libXrandr
-                libGL
-                libxkbcommon 
-                wayland
-                xorg.libxcb  
-                pkgs.vulkan-loader
-                pkgs.glfw
-              ]
-            }";
+          
+          shellHook = ''
+              export LD_LIBRARY_PATH="$LD_LIBRARY_PATH:${builtins.toString (pkgs.lib.makeLibraryPath nativeBuildInputs)}";
+            '';
         };
       }
     );
