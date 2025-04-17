@@ -21,8 +21,8 @@ The constants and variables of the model are devided into subsections to classif
     - ***Oxigen part*** \[%\]: 
 - ***Constants***
   - ***Product*** \[mg/(MVC min)\]: 
-  - ***Glucose*** \[MVC/min\]: 
-  - ***Glutamine*** \[MVC/min\]: 
+  - ***Glucose*** \[mg/(MVC min)\]: 
+  - ***Glutamine*** \[mg/(MVC min)\]: 
   - ***k DO*** \[mol/L\]: 
   - ***k P*** \[/\]: 
   - ***Henry's constant*** \[mol/(bar L)\]: 
