@@ -1,0 +1,10 @@
+[book]
+authors = ["Tilen Gimpelj"]
+language = "en"
+multilingual = false
+src = "src/docs"
+title = "Bion"
+
+[output.html]
+git-repository-url = "https://github.com/tiggax/bion"
+git-repository-icon = "fa-github"

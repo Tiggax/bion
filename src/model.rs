@@ -3,20 +3,26 @@ use serde::{Deserialize, Serialize};
 
 use crate::regressor::Param;
 
-
+/// The default feed rate of the model.
 pub const FEED_RATE: f64 = 0.03;
+/// The default volume size of the model [L].
 pub const VOLUME: f64 = 45.; // L
-pub type State = ode_solvers::SVector<f64,7>;
+/// State Vector used to solve the model from ode_solvers
+pub type State = ode_solvers::SVector<f64, 7>;
+/// Renamed float representing the time variable.
 pub type Time = f64;
 
-
+/// The temperature shift struct
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct TempShift {
+    /// temp shift post value growth constant modifier
     pub n_vcd: f64, // temp shift post
+    /// the day of the temperature shift
     pub day: f64, // day of shift
 }
 
 impl TempShift {
+    /// Implimentation of the default values
     pub fn default() -> Self {
         Self {
             n_vcd: 0.7,
@@ -24,35 +30,47 @@ impl TempShift {
         }
     }
 }
+
+/// Struct for storing constants
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct Constants {
-    pub product: f64,   // [ml/(MVC min)]
-    pub k_glucose: f64,   // [1/min]
+    /// product production constant [mL/ (MVC min)]
+    pub product: f64, // [ml/(MVC min)]
+    /// glucose constant [1 / min]
+    pub k_glucose: f64, // [1/min]
+    /// glutamine constant [1 / min]
     pub k_glutamine: f64, // [1/min]
-    pub kP: f64,        // []
-    pub kDO: f64,       // [%]
-
+    /// Oxigen DO error multiplier
+    pub kP: f64, // []
+    /// Constant for TODO
+    pub kDO: f64, // [%]
 }
 impl Constants {
     pub fn default() -> Self {
         Self {
-            product:    1e-4,
-            k_glucose:    1e-4,
-            k_glutamine:  1e-4,
-            kP:         1e-2,
-            kDO:        1e-4,
+            product: 1e-4,
+            k_glucose: 1e-4,
+            k_glutamine: 1e-4,
+            kP: 1e-2,
+            kDO: 1e-4,
         }
     }
 }
 
+/// Airation settings struct
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct Airation {
+    /// Cell metabolism [mol / cel * min]
+    /// Consumption rate constant
     pub cell_metabolism: f64,
+    /// Air flow [VVh]
     pub air_flow: f64, // [VVh]
+    /// Henry's constant [mol/(bar L)]
     pub henry: f64,
-    pub pid: Pid
+    /// PID controller struct
+    pub pid: Pid,
 }
-impl Airation{
+impl Airation {
     pub fn default() -> Self {
         Self {
             cell_metabolism: 1.266,
@@ -63,10 +81,14 @@ impl Airation{
     }
 }
 
+/// PID controller struct, containing all required parameters of PID controller
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct Pid {
+    /// Minimum level of DO oxygen, or set point of the PID controler [%]
     pub minimum: f64,
+    /// FI value for maximum oxygen [L / min]
     pub fi_oxygen_max: f64,
+    /// Value of max flow avaliable to the PID controller. [L / min]
     pub max_flow: f64,
 }
 impl Pid {
@@ -79,12 +101,20 @@ impl Pid {
     }
 }
 
+/// Initial state values struct.
+/// These values are the values of each of the parameters at the start of the system.
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct Initial {
+    /// Volume of the Bioractor [L]
     pub volume: f64,
+    /// # Viable Cell Density
+    /// The ammount of cell,that are viable ( alive and able to multiply ) in a volume ammount [MVC / (mL^2)]
     pub vcd: f64,
+    /// Initial Glucose level in the bioreactor [g / L]
     pub glucose: f64,
+    /// Initial Glutamine level in the bioreactor [g / L]
     pub glutamine: f64,
+    /// diluted Oxigen concentration [%]
     pub oxygen_part: f64,
 }
 impl Initial {
@@ -99,11 +129,18 @@ impl Initial {
     }
 }
 
+/// Bioreactor feeding struct
+/// this contains all of the feeding variables.
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct Feeding {
-    pub start : f64, // [day]
+    /// Start time of the feeding [day]
+    pub start: f64, // [day]
+    /// Feeding rate, at which the feed is added to the reactor in reference to its volume.
+    /// [(% "IWV")/ day]
     pub rate: f64, // [(%"IWV")/"day]
+    /// Glucose ammount in the feed per litre [g/L]
     pub glucose: f64, // [g/L]
+    /// Glutamine ammount in the feed per litre [g/L]
     pub glutamine: f64,
 }
 impl Feeding {
@@ -116,7 +153,7 @@ impl Feeding {
         }
     }
 }
-
+/// Struct reprisenting the bioreactor
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct Bioreactor {
     pub mu_max: f64,
@@ -132,7 +169,6 @@ pub struct Bioreactor {
     pub feeding: Feeding,
 }
 impl Bioreactor {
-
     pub fn default() -> Self {
         Self {
             mu_max: 0.0005,
@@ -155,8 +191,7 @@ impl Bioreactor {
         self.airation.henry * 0.21
     }
 
-    pub fn fit(mu_max: f64, feed_rate: f64, air_flow: f64, k_gluc: f64,k_glut: f64 ) -> Self {
-
+    pub fn fit(mu_max: f64, feed_rate: f64, air_flow: f64, k_gluc: f64, k_glut: f64) -> Self {
         let mut def = Self::default();
         def.mu_max = mu_max;
         def.constants.k_glucose = k_gluc;
@@ -164,64 +199,176 @@ impl Bioreactor {
         def.airation.air_flow = air_flow;
         def.feeding.rate = feed_rate;
 
-
         def
     }
 
-    pub fn view(&mut self, ui: &mut egui::Ui) -> bool{
-
-        ui.add(Slider::new(&mut self.mu_max, 0.0..=0.01).text("Mu max [MVC/(ml min)]")).changed() ||
-        ui.add(Slider::new(&mut self.power_input, 0.0..=100.).text("Power input [W/m3]")).changed() ||
-        ui.add(Slider::new(&mut self.ks_glucose, 0.0..=0.2).text("ks_glucose [g/L]")).changed() ||
-        ui.add(Slider::new(&mut self.ks_glutamine, 0.0..=0.2).text("ks glutamine [g/L]")).changed() ||
-        ui.collapsing("Initial", |ui|{
-            ui.add(Slider::new(&mut self.initial.vcd, 0.0..=10.).text("VCD [MVC/mL]")).changed() ||
-            ui.add(Slider::new(&mut self.initial.volume, 0.0..=100.).text("volume [L]")).changed() ||
-            ui.add(Slider::new(&mut self.initial.glucose, 0.0..=20.).text("glucose [g/L]")).changed() ||
-            ui.add(Slider::new(&mut self.initial.glutamine, 0.0..=20.).text("glutamine [g/L]")).changed() ||
-            ui.add(Slider::new(&mut self.initial.oxygen_part, 0.0..=100.).text("oxigen part [%]")).changed() ||
-            false
-        }).body_returned.unwrap_or(false) ||
-        ui.collapsing("Constants", |ui|{
-            ui.add(Slider::new(&mut self.constants.product, 0.0..=0.001).text("product [mg/MVC min]")).changed() ||
-            ui.add(Slider::new(&mut self.constants.k_glucose, 0.0..=0.001).text("glucose [MVC/min]")).changed() ||
-            ui.add(Slider::new(&mut self.constants.k_glutamine, 0.0..=0.001).text("glutamine [MVC/min]")).changed() ||
-            ui.add(Slider::new(&mut self.constants.kDO, 0.0..=0.001).text("kDO [mol/L]")).changed() ||
-            ui.add(Slider::new(&mut self.constants.kP, 0.0..=1.).text("kP [/]")).changed() ||
-            ui.add(Slider::new(&mut self.airation.henry,0.0..=10.).text("Henry's constant [mol/(bar L)]")).changed() ||
-            false
-        }).body_returned.unwrap_or(false) ||
-        ui.label("Time shift").changed() ||
-        ui.collapsing("Time shift", |ui| {
-            ui.add(Slider::new(&mut self.temp_shift.day, 0.0..=14.).text("shift day")).changed() ||
-            ui.add(Slider::new(&mut self.temp_shift.n_vcd, 0.0..=2.).text("post shift growth")).changed() ||
-            false
-
-        }).body_returned.unwrap_or(false) ||
-        ui.collapsing("Airation", |ui|{
-            ui.add(Slider::new(&mut self.airation.cell_metabolism, 0.0..=100.).text("Cell metabolism [mol / (cell min)]")).changed() ||
-            ui.add(Slider::new(&mut self.airation.air_flow, 0.0..=10.).text("Air flow [L / min]")).changed() ||
-            ui.collapsing("PID", |ui|{
-                ui.add(Slider::new(&mut self.airation.pid.minimum, 0.0..=100.).text("minimum [%]")).changed() ||
-                ui.add(Slider::new(&mut self.airation.pid.max_flow, 0.0..=100.).text("max_flow [L/min]")).changed() ||
-                ui.add(Slider::new(&mut self.airation.pid.fi_oxygen_max, 0.0..=100.).text("fi_oxigen_max [L / min]")).changed() ||
-                false
-            }).body_returned.unwrap_or(false) ||
-            false
-        }).body_returned.unwrap_or(false) ||
-        ui.collapsing("Feeding", |ui|{
-            ui.add(Slider::new(&mut self.feeding.start, 0.0..=14.).text("start")).changed() ||
-            ui.add(Slider::new(&mut self.feeding.rate, 0.0..=1.).text("rate")).changed() ||
-            ui.add(Slider::new(&mut self.feeding.glucose, 0.0..=100.).text("glucose")).changed() ||
-            ui.add(Slider::new(&mut self.feeding.glutamine, 0.0..=100.).text("glutamine")).changed() ||
-            false
-        }).body_returned.unwrap_or(false) ||
-        false
+    pub fn view(&mut self, ui: &mut egui::Ui) -> bool {
+        ui.add(Slider::new(&mut self.mu_max, 0.0..=0.01).text("Mu max [MVC/(ml min)]"))
+            .changed()
+            || ui
+                .add(Slider::new(&mut self.power_input, 0.0..=100.).text("Power input [W/m3]"))
+                .changed()
+            || ui
+                .add(Slider::new(&mut self.ks_glucose, 0.0..=0.2).text("ks_glucose [g/L]"))
+                .changed()
+            || ui
+                .add(Slider::new(&mut self.ks_glutamine, 0.0..=0.2).text("ks glutamine [g/L]"))
+                .changed()
+            || ui
+                .collapsing("Initial", |ui| {
+                    ui.add(Slider::new(&mut self.initial.vcd, 0.0..=10.).text("VCD [MVC/mL]"))
+                        .changed()
+                        || ui
+                            .add(
+                                Slider::new(&mut self.initial.volume, 0.0..=100.)
+                                    .text("volume [L]"),
+                            )
+                            .changed()
+                        || ui
+                            .add(
+                                Slider::new(&mut self.initial.glucose, 0.0..=20.)
+                                    .text("glucose [g/L]"),
+                            )
+                            .changed()
+                        || ui
+                            .add(
+                                Slider::new(&mut self.initial.glutamine, 0.0..=20.)
+                                    .text("glutamine [g/L]"),
+                            )
+                            .changed()
+                        || ui
+                            .add(
+                                Slider::new(&mut self.initial.oxygen_part, 0.0..=100.)
+                                    .text("oxigen part [%]"),
+                            )
+                            .changed()
+                        || false
+                })
+                .body_returned
+                .unwrap_or(false)
+            || ui
+                .collapsing("Constants", |ui| {
+                    ui.add(
+                        Slider::new(&mut self.constants.product, 0.0..=0.001)
+                            .text("product [mg/MVC min]"),
+                    )
+                    .changed()
+                        || ui
+                            .add(
+                                Slider::new(&mut self.constants.k_glucose, 0.0..=0.001)
+                                    .text("glucose [MVC/min]"),
+                            )
+                            .changed()
+                        || ui
+                            .add(
+                                Slider::new(&mut self.constants.k_glutamine, 0.0..=0.001)
+                                    .text("glutamine [MVC/min]"),
+                            )
+                            .changed()
+                        || ui
+                            .add(
+                                Slider::new(&mut self.constants.kDO, 0.0..=0.001)
+                                    .text("kDO [mol/L]"),
+                            )
+                            .changed()
+                        || ui
+                            .add(Slider::new(&mut self.constants.kP, 0.0..=1.).text("kP [/]"))
+                            .changed()
+                        || ui
+                            .add(
+                                Slider::new(&mut self.airation.henry, 0.0..=10.)
+                                    .text("Henry's constant [mol/(bar L)]"),
+                            )
+                            .changed()
+                        || false
+                })
+                .body_returned
+                .unwrap_or(false)
+            || ui.label("Time shift").changed()
+            || ui
+                .collapsing("Time shift", |ui| {
+                    ui.add(Slider::new(&mut self.temp_shift.day, 0.0..=14.).text("shift day"))
+                        .changed()
+                        || ui
+                            .add(
+                                Slider::new(&mut self.temp_shift.n_vcd, 0.0..=2.)
+                                    .text("post shift growth"),
+                            )
+                            .changed()
+                        || false
+                })
+                .body_returned
+                .unwrap_or(false)
+            || ui
+                .collapsing("Airation", |ui| {
+                    ui.add(
+                        Slider::new(&mut self.airation.cell_metabolism, 0.0..=100.)
+                            .text("Cell metabolism [mol / (cell min)]"),
+                    )
+                    .changed()
+                        || ui
+                            .add(
+                                Slider::new(&mut self.airation.air_flow, 0.0..=10.)
+                                    .text("Air flow [L / min]"),
+                            )
+                            .changed()
+                        || ui
+                            .collapsing("PID", |ui| {
+                                ui.add(
+                                    Slider::new(&mut self.airation.pid.minimum, 0.0..=100.)
+                                        .text("minimum [%]"),
+                                )
+                                .changed()
+                                    || ui
+                                        .add(
+                                            Slider::new(
+                                                &mut self.airation.pid.max_flow,
+                                                0.0..=100.,
+                                            )
+                                            .text("max_flow [L/min]"),
+                                        )
+                                        .changed()
+                                    || ui
+                                        .add(
+                                            Slider::new(
+                                                &mut self.airation.pid.fi_oxygen_max,
+                                                0.0..=100.,
+                                            )
+                                            .text("fi_oxigen_max [L / min]"),
+                                        )
+                                        .changed()
+                                    || false
+                            })
+                            .body_returned
+                            .unwrap_or(false)
+                        || false
+                })
+                .body_returned
+                .unwrap_or(false)
+            || ui
+                .collapsing("Feeding", |ui| {
+                    ui.add(Slider::new(&mut self.feeding.start, 0.0..=14.).text("start"))
+                        .changed()
+                        || ui
+                            .add(Slider::new(&mut self.feeding.rate, 0.0..=1.).text("rate"))
+                            .changed()
+                        || ui
+                            .add(Slider::new(&mut self.feeding.glucose, 0.0..=100.).text("glucose"))
+                            .changed()
+                        || ui
+                            .add(
+                                Slider::new(&mut self.feeding.glutamine, 0.0..=100.)
+                                    .text("glutamine"),
+                            )
+                            .changed()
+                        || false
+                })
+                .body_returned
+                .unwrap_or(false)
+            || false
     }
 
-
     pub fn update(&mut self, param: &Param, val: f64) {
-
         match param.target {
             crate::regressor::Target::MuMax => self.mu_max = val,
             crate::regressor::Target::NVcd => self.temp_shift.n_vcd = val,
@@ -234,33 +381,39 @@ impl Bioreactor {
     }
 }
 impl ode_solvers::System<Time, State> for Bioreactor {
-
     fn mut_system(&self, x: Time, y: &mut State, dy: &mut State) {
-        let (v, vcd, gluc, glut, c_o2, mut o2_flow, product) = (y[0], y[1], y[2], y[3], y[4], y[5], y[6]);
+        let (v, vcd, gluc, glut, c_o2, mut o2_flow, product) =
+            (y[0], y[1], y[2], y[3], y[4], y[5], y[6]);
 
         let power_input = self.power_input; // [W/m^3]
-        
+
         let air_flow = self.airation.air_flow * self.initial.volume; // [L/min]
 
-        
         // Temp shift
         let n_vcd = if x < self.temp_shift.day * 24. * 60. {
             1.
         } else {
-            self.temp_shift.n_vcd 
+            self.temp_shift.n_vcd
         };
         // Volume
-        //dy[0] = 
+        //dy[0] =
 
         // VCD
-        let mut c_mu = self.mu_max * ( gluc / (self.ks_glucose + gluc)) * ( glut / ( self.ks_glutamine + glut ) ) * (c_o2 / ( self.constants.kDO + c_o2));
-        c_mu = if gluc < 0. || glut < 0. || c_o2 < 0. {-1. * c_mu.abs()} else {c_mu}; // old -1. * c_mu.abs()
-        
+        let mut c_mu = self.mu_max
+            * (gluc / (self.ks_glucose + gluc))
+            * (glut / (self.ks_glutamine + glut))
+            * (c_o2 / (self.constants.kDO + c_o2));
+        c_mu = if gluc < 0. || glut < 0. || c_o2 < 0. {
+            -1. * c_mu.abs()
+        } else {
+            c_mu
+        }; // old -1. * c_mu.abs()
+
         dy[1] = c_mu * vcd * n_vcd;
         // Gluc
-        dy[2] = - self.constants.k_glucose * vcd * ( gluc / ( self.ks_glucose + gluc) );
+        dy[2] = -self.constants.k_glucose * vcd * (gluc / (self.ks_glucose + gluc));
         // Glut
-        dy[3] = - self.constants.k_glutamine * vcd * ( glut / ( self.ks_glutamine + glut) );
+        dy[3] = -self.constants.k_glutamine * vcd * (glut / (self.ks_glutamine + glut));
 
         // PRODUCT
 
@@ -273,34 +426,29 @@ impl ode_solvers::System<Time, State> for Bioreactor {
         let mv = self.constants.kP * DO_error;
         if DO_error > 0. {
             o2_flow = (mv * self.airation.pid.fi_oxygen_max) * 1000.;
-        if o2_flow > self.airation.pid.max_flow {
-            o2_flow = self.airation.pid.max_flow;
-        }
+            if o2_flow > self.airation.pid.max_flow {
+                o2_flow = self.airation.pid.max_flow;
+            }
         } else {
             o2_flow = 0.;
         }
-        
+
         y[5] = o2_flow;
 
-
-        let flow_total = air_flow + o2_flow; // 
+        let flow_total = air_flow + o2_flow; //
         let mut k_la = 2.17e-5 * power_input.powf(1.1) * flow_total.powf(0.9); // 1/min
-        k_la *= (self.initial.volume/v); // dilution volume correction 
+        k_la *= (self.initial.volume / v); // dilution volume correction
 
         let fiv_o2_c = air_flow * 0.21 + o2_flow; // flow je stalen , kisik je odvisen
-        
+
         let x_o2 = fiv_o2_c / (flow_total);
         let p_o2 = x_o2; // * 1 bar
-
 
         let c_o2_s = self.airation.henry * p_o2;
 
         let q_o2 = self.airation.cell_metabolism * 1e-8; // mol / cel * min
-        let our =  vcd * q_o2; //  mol/(L min)
+        let our = vcd * q_o2; //  mol/(L min)
         let otr = k_la * (c_o2_s - c_o2); //  mol/(L min)
-
-
-
 
         // c_O2
         if c_o2 > 0. {
@@ -311,13 +459,13 @@ impl ode_solvers::System<Time, State> for Bioreactor {
 
         let fi_v = self.fi_v();
 
-        if x < self.feeding.start * 24. *60. {
+        if x < self.feeding.start * 24. * 60. {
             dy[0] = 0.;
         } else {
             dy[0] = fi_v;
-            dy[1] -= vcd * ( fi_v / v );
-            dy[2] += ( self.feeding.glucose - gluc ) * ( fi_v / v );
-            dy[3] += ( self.feeding.glutamine - glut ) * ( fi_v / v );
+            dy[1] -= vcd * (fi_v / v);
+            dy[2] += (self.feeding.glucose - gluc) * (fi_v / v);
+            dy[3] += (self.feeding.glutamine - glut) * (fi_v / v);
 
             dy[6] -= product * (fi_v / v);
         }
