@@ -309,17 +309,31 @@ impl Front for BionApp {
             let nodes_are_not_empty = nodes.nodes.iter().any(|node| !node.children.is_empty());
 
             if nodes_are_not_empty {
-                ui.label(format!("RMSE: {}", "e"));
-
                 let data_points = RegressorNode::translate(nodes);
 
-                let mut vcd_rmse = 0.;
-                let mut glucose_rmse = 0.;
-                let mut product_rmse = 0.;
-                let mut do_rmse = 0.;
+                for typ in [
+                    Group::VCD,
+                    Group::Glucose,
+                    Group::Glutamin,
+                    Group::DO,
+                    Group::Product,
+                ] {
+                    let points: Vec<RegressorNode> = data_points
+                        .clone()
+                        .into_iter()
+                        .filter(|p| p.group == typ)
+                        .collect();
 
-                for point in data_points {
-                    let target = match point.group {
+                    if points.is_empty() {
+                        continue;
+                    }
+
+                    let y = points.iter().map(|p| p.y).collect::<Vec<f64>>();
+                    let count = y.len();
+
+                    let mean = y.iter().sum::<f64>() / count as f64;
+
+                    let target = match typ {
                         Group::VCD => self.sim_graphs.vcd.clone(),
                         Group::Glucose => self.sim_graphs.glucose.clone(),
                         Group::Glutamin => self.sim_graphs.glutamin.clone(),
@@ -327,32 +341,24 @@ impl Front for BionApp {
                         Group::Product => self.sim_graphs.product.clone(),
                     };
 
-                    let val;
-                    if let Some([t_i, y_i]) = target
-                        .iter()
-                        .find(|[x_i, _y_i]| (x_i - point.x).abs() < EPSILON)
-                    {
-                        rmse_val = (point.y - y_i).powf(2.);
+                    let mut rmse: f64 = 0.;
+                    let mut tss: f64 = 0.; // Total sum of squares.
+                    for point in y {
+                        if let Some([t_i, y_i]) =
+                            target.iter().find(|[x_i, y_i]| (x_i - point).abs() <= 0.5)
+                        // should be epsilon, but it doesn't find points.
+                        {
+                            rmse += (point - y_i).powf(2.);
+                            tss += (point - mean).powf(2.);
+                        }
                     }
 
-                    match point.group {
-                        Group::VCD => {
-                            vcd_rmse += val;
-                        }
-                        Group::VCD => {
-                            vcd_rmse += val;
-                        }
-                        Group::VCD => {
-                            vcd_rmse += val;
-                        }
-                        Group::VCD => {
-                            vcd_rmse += val;
-                        }
-                        Group::Glucose => todo!(),
-                        Group::Glutamin => todo!(),
-                        Group::DO => todo!(),
-                        Group::Product => todo!(),
-                    }
+                    let rsquare = 1. - (rmse / tss);
+                    let rmse = rmse / count as f64;
+
+                    ui.label(format!("{}:", typ));
+                    ui.label(format!("   RMSE: {}", rmse));
+                    ui.label(format!("   R^2: {}", rsquare));
                 }
             }
 

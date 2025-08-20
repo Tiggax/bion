@@ -53,41 +53,47 @@ pub enum Target {
 pub struct RegressorNode {
     pub group: Group,
     pub x: f64,
-    pub y: f64
+    pub y: f64,
 }
 
 impl RegressorNode {
-    fn new(group: Group, x: f64, y:f64) -> Self  {
+    fn new(group: Group, x: f64, y: f64) -> Self {
         Self { group, x, y }
     }
     pub fn translate(tree: Tree) -> Vec<RegressorNode> {
         let mut out = Vec::new();
         for ParentNode { name, children } in tree.nodes {
-
             match name.as_ref() {
                 "VCD" => {
                     for tree::Node { x, y } in children {
                         out.push(RegressorNode::new(Group::VCD, x, y));
                     }
-                },
+                }
                 "Glucose" => {
                     for tree::Node { x, y } in children {
                         out.push(RegressorNode::new(Group::Glucose, x, y));
                     }
-                },
+                }
                 "Glutamin" => {
                     for tree::Node { x, y } in children {
                         out.push(RegressorNode::new(Group::Glutamin, x, y));
                     }
-                },
+                }
+                "Product" => {
+                    for tree::Node { x, y } in children {
+                        out.push(RegressorNode::new(Group::Product, x, y));
+                    }
+                }
+                "DO" => {
+                    for tree::Node { x, y } in children {
+                        out.push(RegressorNode::new(Group::DO, x, y));
+                    }
+                }
                 _ => {}
             }
-
         }
 
-        out.sort_by(|a,b| {
-            a.x.partial_cmp(&b.x).unwrap()
-        });
+        out.sort_by(|a, b| a.x.partial_cmp(&b.x).unwrap());
         let out = out.into_iter().rev().collect();
         out
     }
