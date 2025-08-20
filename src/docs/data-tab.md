@@ -10,7 +10,11 @@ The csv must include the following columns:
   | minutes | vcd | gln | gluc | do\_50 | product |
   | ------- | --- | --- | ---- | ------ | ------- |
   | the ammount of time passed in minutes | Viable cell density | glutamine concentration | glucose concentration | dissolved oxygen | product concentration |
-  
+
+<div class="warning">
+  A sample of the data file is provided in the <a href="https://github.com/Tiggax/bion/blob/main/data.csv">Github Repository</a>
+</div>
+
 ## Clear Nodes
 
 This button clears the experimental data nodes from the graph.
