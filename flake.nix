@@ -4,27 +4,24 @@
     naersk.url = "github:nix-community/naersk";
     nixpkgs.url = "github:NixOS/nixpkgs/nixpkgs-unstable";
 
-    nixpkgs-mozilla = {
-      url = "github:mozilla/nixpkgs-mozilla";
-      flake = false;
+    rust-overlay = {
+      url = "github:oxalica/rust-overlay";
+      inputs.nixpkgs.follows = "nixpkgs";
     };
   };
 
-  outputs = { self, flake-utils, naersk, nixpkgs, nixpkgs-mozilla }:
+  outputs = { self, flake-utils, naersk, rust-overlay, nixpkgs}:
     flake-utils.lib.eachDefaultSystem (system:
       let
         pkgs = (import nixpkgs) {
           inherit system;
 
           overlays = [
-            (import nixpkgs-mozilla)
+            (import rust-overlay)
           ];
         };
 
-        toolchain = (pkgs.rustChannelOf {
-          rustToolchain = ./rust-toolchain.toml;
-          sha256 = "sha256-X/4ZBHO3iW0fOenQ3foEvscgAPJYl2abspaBThDOukI=";
-        }).rust;
+        toolchain = pkgs.rust-bin.fromRustupToolchainFile ./rust-toolchain.toml;
 
         naersk' = pkgs.callPackage naersk {
           cargo = toolchain;
