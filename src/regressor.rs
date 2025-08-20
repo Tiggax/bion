@@ -1,8 +1,11 @@
 use std::fmt::{self, Display, Formatter};
 
+use crate::ui::tree::{ParentNode, Tree};
+use crate::{
+    model::{Bioreactor, State},
+    ui::tree::{self},
+};
 use argmin::core::{CostFunction, Error};
-use crate::{model::{Bioreactor, State}, ui::tree::{self}};
-use crate::ui::tree::{Tree, ParentNode};
 
 #[derive(Debug, PartialEq, Eq, Clone)]
 pub enum Group {
@@ -22,7 +25,7 @@ impl Display for Group {
 #[derive(Clone, Debug)]
 pub struct Param {
     pub target: Target,
-    pub mode: Mode
+    pub mode: Mode,
 }
 impl Param {
     pub fn default() -> Self {
@@ -36,7 +39,7 @@ impl Param {
 #[derive(Clone, Debug, PartialEq)]
 pub enum Mode {
     Single(Group),
-    Mixed
+    Mixed,
 }
 
 #[derive(Clone, Debug, PartialEq)]
@@ -104,7 +107,6 @@ pub struct Regressor {
     pub simulation: Bioreactor,
     pub param: Param,
     pub epsilon: f64,
-
 }
 
 impl Regressor {
@@ -123,23 +125,22 @@ impl CostFunction for Regressor {
     type Output = f64;
 
     fn cost(&self, val: &Self::Param) -> Result<Self::Output, Error> {
-
         if *val < 0. {
-            return Ok(100_000.)
+            return Ok(100_000.);
         }
 
         const MINUTES: f64 = 14. * 24. * 60.;
 
         const STEP: f64 = 2.; // step increment lower is more precise but more computationaly intense
-        
+
         let initial_state = State::from([
-            self.simulation.initial.volume, 
-            self.simulation.initial.vcd, 
-            self.simulation.initial.glucose, 
-            self.simulation.initial.glutamine, 
-            (self.simulation.initial.oxygen_part * self.simulation.oxigen_saturation()) / 100., 
-            0., 
-            0. 
+            self.simulation.initial.volume,
+            self.simulation.initial.vcd,
+            self.simulation.initial.glucose,
+            self.simulation.initial.glutamine,
+            (self.simulation.initial.oxygen_part * self.simulation.oxigen_saturation()) / 100.,
+            0.,
+            0.,
         ]);
 
         let mut simulation = self.simulation.clone();
@@ -149,14 +150,13 @@ impl CostFunction for Regressor {
         let res = stepper.mut_integrate();
 
         if let Ok(_val) = res {
-
             let nodes = match &self.param.mode {
-                Mode::Single(val) => {
-                    self.nodes.clone().into_iter()
-                    .filter(|node| {
-                        node.group == *val
-                    }).collect::<Vec<RegressorNode>>()
-                }
+                Mode::Single(val) => self
+                    .nodes
+                    .clone()
+                    .into_iter()
+                    .filter(|node| node.group == *val)
+                    .collect::<Vec<RegressorNode>>(),
                 Mode::Mixed => self.nodes.clone(),
             };
 
@@ -199,9 +199,8 @@ impl CostFunction for Regressor {
                 }
             }
             Ok(result)
-
         } else {
-            return Err(Error::msg("no result"))
+            return Err(Error::msg("no result"));
         }
     }
 }
