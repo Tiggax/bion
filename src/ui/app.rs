@@ -304,7 +304,7 @@ impl Front for BionApp {
 
             ui.label("Statistics:");
 
-            let mut nodes = self.point_nodes.clone();
+            let nodes = self.point_nodes.clone();
 
             let nodes_are_not_empty = nodes.nodes.iter().any(|node| !node.children.is_empty());
 
