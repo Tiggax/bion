@@ -20,6 +20,12 @@ This is done by selecting the simulation values at each experimental nodes posit
 Selecting the specific mode will only look at values of that parameter, while selecting *Mixed* will simply look at each one and returning the sum of all differences.
 
 
+## Statistics
+
+When a user imports data, some simple statistics are shown for RMSE and R^2 values.
+These can be used to quantify simulation fittnes.
+
+
 ## Running the minimization
 
 *after* importing the experimental nodes and selecting your wanted target and mode, you can click the ***Minimize*** button and the software will try to minimize the simulation to the experimental data.
